@@ -12,9 +12,10 @@ end
 
 task :build do
   puts `gem build transactor.gemspec`
+end
 
 task :push do
-  require 'transactors/version'
+  require 'transactor/version'
   puts `gem push transactor-#{Transactor::VERSION}.gem`
 end
 
