@@ -63,5 +63,16 @@ Transactor.transaction do
   EmailCustomer.perform(user, amount)
 end
 
-Transactor.perform cache_in_redis: [key, value], update_active_record: {my_attr: value}, send_charge_to_stripe: amount, email_customer: [user, amount]
+Transactor.transaction cache_in_redis: [key, value], update_active_record: {my_attr: value}, send_charge_to_stripe: amount, email_customer: [user, amount]
+
+Transactor.transaction do
+  Transactor.perform(*args) do |arg1,arg2|
+    # do something here
+  end.rollback do |result,arg1,arg2|
+    # roll it back if something fails after this block
+  end
+
+  # another transactor could go here or simply anything
+  # that might raise an exception
+end
 ```
