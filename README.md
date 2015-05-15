@@ -65,6 +65,13 @@ Transactor.transaction do
   EmailCustomer.perform(user, amount)
 end
 
+Transactor.transaction do
+  cache_in_redis key, value
+  update_active_record my_attr: value
+  send_charge_to_stripe amount
+  email_customer user, amount
+end
+
 Transactor.transaction cache_in_redis: [key, value], update_active_record: {my_attr: value}, send_charge_to_stripe: amount, email_customer: [user, amount]
 
 Transactor.transaction do
