@@ -2,7 +2,7 @@ $:.push File.expand_path("../lib", __FILE__)
 require "transactor/version"
 
 Gem::Specification.new do |s|
-  s.name        = "Transactor"
+  s.name        = "transactor"
   s.version     = Transactor::VERSION
   s.summary     = "Transactional actors for easy rollbacks"
   s.description = "Transactional actors for easy rollbacks"
