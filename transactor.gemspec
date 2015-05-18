@@ -12,6 +12,8 @@ Gem::Specification.new do |s|
   s.test_files  = Dir["spec/**/*"]
   s.homepage    = "http://github.com/markrebec/transactor"
 
+  s.add_dependency "interactor"
+
   s.add_development_dependency "rake"
   s.add_development_dependency "rspec"
 end
