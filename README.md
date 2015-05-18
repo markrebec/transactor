@@ -59,10 +59,10 @@ class EmailCustomer < Transactor::Actor
 end
 
 Transactor.transaction do
-  CacheInRedis.perform(key, value)
-  UpdateActiveRecord.perform(my_attr: value)
-  SendChargeToStripe.perform(amount)
-  EmailCustomer.perform(user, amount)
+  perform CacheInRedis, key, value
+  perform UpdateActiveRecord, my_attr: value
+  perform SendChargeToStripe.new(amount)
+  perform :email_customer, user, amount
 end
 
 Transactor.transaction do
