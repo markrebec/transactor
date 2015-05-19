@@ -1,6 +1,6 @@
 module Transactor
   class Performance
-    attr_reader :result
+    attr_reader :actor, :result
 
     def self.perform(actor, *args, &block)
       new(actor, *args).perform(&block)
