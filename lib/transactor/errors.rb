@@ -15,7 +15,7 @@ module Transactor
 
   class RollbackBombed < PerformanceBombed; end
 
-  class TransactionFailed < StandardError
+  class TransactionError < StandardError
     attr_reader :transaction
 
     def initialize(e, transaction)
@@ -25,13 +25,6 @@ module Transactor
     end
   end
 
-  class RollbackFailed < StandardError
-    attr_reader :transaction
-
-    def initialize(e, transaction)
-      super("Transactor rollback failed! #{e.class.name}: #{e.message}")
-      set_backtrace e.backtrace
-      @transaction = transaction
-    end
-  end
+  class TransactionFailed < TransactionError; end
+  class RollbackFailed < TransactionError; end
 end
