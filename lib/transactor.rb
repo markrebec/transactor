@@ -1,5 +1,5 @@
 require 'active_support/core_ext/string'
-require 'active_support/core_ext/array/extract_options'
+require 'active_support/core_ext/array'
 require 'transactor/version'
 require 'transactor/errors'
 require 'transactor/actor'
