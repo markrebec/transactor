@@ -8,6 +8,8 @@
 
 Transactional actors for easy rollbacks of performances.
 
+If one of these operations fails, execution is halted and all previous operations are rolled back using their defined rollback functionality:
+
 ```ruby
 Transactor.transaction do
   perform CacheInRedis, key, value
