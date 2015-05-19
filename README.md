@@ -61,6 +61,7 @@ end
 Transactor.transaction do
   perform CacheInRedis, key, value
   perform UpdateActiveRecord, my_attr: value
+  MyModel.update!(my_attr: value) # don't even need to use transactor when using active_record
   perform SendChargeToStripe.new(amount)
   perform :email_customer, user, amount
 end
@@ -68,6 +69,7 @@ end
 Transactor.transaction do
   cache_in_redis key, value
   update_active_record my_attr: value
+  MyModel.update!(my_attr: value) # don't even need to use transactor when using active_record
   send_charge_to_stripe amount
   email_customer user, amount
 end
@@ -75,10 +77,16 @@ end
 Transactor.transaction cache_in_redis: [key, value], update_active_record: {my_attr: value}, send_charge_to_stripe: amount, email_customer: [user, amount]
 
 Transactor.transaction do
-  Transactor.perform(*args) do |arg1,arg2|
+  improvise(*args) do
     # do something here
-  end.rollback do |result,arg1,arg2|
+  end.rollback do
     # roll it back if something fails after this block
+  end
+
+  improvise.rollback do
+    # don't actually perform any additionalimprov operations,
+    # but DO perform some special one-off rollback logic if
+    # stuff below fails
   end
 
   # another transactor could go here or simply anything
