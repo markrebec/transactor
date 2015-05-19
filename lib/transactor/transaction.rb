@@ -2,7 +2,7 @@ module Transactor
   class Transaction
     attr_reader :performances
 
-    def transaction!(&block)
+    def in_transaction(&block)
       begin
         instance_eval &block
       rescue Exception => e # yes, we want to catch everything
@@ -13,6 +13,14 @@ module Transactor
         end
 
         raise e
+      end
+    end
+
+    def transaction!(&block)
+      if defined?(ActiveRecord::Base) && ActiveRecord::Base.respond_to?(:transaction)
+        ActiveRecord::Base.transaction { in_transaction &block }
+      else
+        in_transaction &block
       end
       self
     end
