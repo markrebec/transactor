@@ -6,9 +6,45 @@
 [![Gem Version](https://badge.fury.io/rb/transactor.png)](http://badge.fury.io/rb/transactor)
 [![Dependency Status](https://gemnasium.com/markrebec/transactor.png)](https://gemnasium.com/markrebec/transactor)
 
-Transactional actors for easy rollbacks
+Transactional actors for easy rollbacks of performances.
 
 ```ruby
+Transactor.transaction do
+  perform CacheInRedis, key, value
+  perform UpdateActiveRecord, my_attr: value
+  MyModel.update!(my_attr: value) # don't even need to use transactor when using active_record
+  perform SendChargeToStripe.new(amount)
+  perform :email_customer, user, amount
+end
+
+Transactor.transaction do
+  cache_in_redis key, value
+  update_active_record my_attr: value
+  MyModel.update!(my_attr: value) # don't even need to use transactor when using active_record
+  send_charge_to_stripe amount
+  email_customer user, amount
+end
+
+Transactor.transaction cache_in_redis: [key, value], update_active_record: {my_attr: value}, send_charge_to_stripe: amount, email_customer: [user, amount]
+
+Transactor.transaction do
+  improvise(*args) do
+    # do something here
+  end.rollback do
+    # roll it back if something fails after this block
+  end
+
+  improvise.rollback do
+    # don't actually perform any additionalimprov operations,
+    # but DO perform some special one-off rollback logic if
+    # stuff below fails
+  end
+
+  # another transactor could go here or simply anything
+  # that might raise an exception
+end
+
+
 class CacheInRedis < Transactor::Actor
   def perform
     # put your key/value into redis
@@ -55,43 +91,9 @@ class EmailCustomer < Transactor::Actor
     # maybe send an email that there was a problem
   end
 end
-
-Transactor.transaction do
-  perform CacheInRedis, key, value
-  perform UpdateActiveRecord, my_attr: value
-  MyModel.update!(my_attr: value) # don't even need to use transactor when using active_record
-  perform SendChargeToStripe.new(amount)
-  perform :email_customer, user, amount
-end
-
-Transactor.transaction do
-  cache_in_redis key, value
-  update_active_record my_attr: value
-  MyModel.update!(my_attr: value) # don't even need to use transactor when using active_record
-  send_charge_to_stripe amount
-  email_customer user, amount
-end
-
-Transactor.transaction cache_in_redis: [key, value], update_active_record: {my_attr: value}, send_charge_to_stripe: amount, email_customer: [user, amount]
-
-Transactor.transaction do
-  improvise(*args) do
-    # do something here
-  end.rollback do
-    # roll it back if something fails after this block
-  end
-
-  improvise.rollback do
-    # don't actually perform any additionalimprov operations,
-    # but DO perform some special one-off rollback logic if
-    # stuff below fails
-  end
-
-  # another transactor could go here or simply anything
-  # that might raise an exception
-end
 ```
 
 ### TODO
 
+* documentation
 * remove Array#to_h references (for ruby 2.0)
