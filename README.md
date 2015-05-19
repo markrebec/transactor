@@ -93,3 +93,7 @@ Transactor.transaction do
   # that might raise an exception
 end
 ```
+
+### TODO
+
+* remove Array#to_h references (for ruby 2.0)
