@@ -9,8 +9,6 @@
 Transactional actors for easy rollbacks
 
 ```ruby
-# probably use https://github.com/collectiveidea/interactor as a base for the actors?
-
 class CacheInRedis < Transactor::Actor
   def perform
     # put your key/value into redis
