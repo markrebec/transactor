@@ -13,15 +13,7 @@ module Transactor
     end
   end
 
-  class RollbackBombed < StandardError
-    attr_reader :performance
-
-    def initialize(e, performance=nil)
-      super("#{e.class.name}: #{e.message} #{performance.to_s}")
-      set_backtrace e.backtrace
-      @performance = performance
-    end
-  end
+  class RollbackBombed < PerformanceBombed; end
 
   class TransactionFailed < StandardError
     attr_reader :transaction
