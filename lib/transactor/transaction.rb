@@ -41,7 +41,7 @@ module Transactor
       raise PerformanceBombed.new(e, performance)
     end
 
-    def improv(*args, &block)
+    def improvise(*args, &block)
       performance = Improv.new(*args)
       performance.perform(&block)
       performances << performance
