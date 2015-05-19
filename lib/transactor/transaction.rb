@@ -1,10 +1,10 @@
 module Transactor
   class Transaction
-    attr_reader :performances
+    attr_reader :performances, :result
 
     def in_transaction(&block)
       begin
-        instance_eval &block
+        @result = instance_eval &block if block_given?
       rescue Exception => e # yes, we want to catch everything
         begin
           rollback
@@ -12,7 +12,7 @@ module Transactor
           raise RollbackFailed.new(e, self)
         end
 
-        raise e
+        raise TransactionFailed.new(e, self)
       end
     end
 
@@ -27,7 +27,6 @@ module Transactor
 
     def transaction(&block)
       transaction!(&block)
-      true
     rescue => e
       false
     end

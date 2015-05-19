@@ -23,6 +23,16 @@ module Transactor
     end
   end
 
+  class TransactionFailed < StandardError
+    attr_reader :transaction
+
+    def initialize(e, transaction)
+      super("#{e.class.name}: #{e.message}")
+      set_backtrace e.backtrace
+      @transaction = transaction
+    end
+  end
+
   class RollbackFailed < StandardError
     attr_reader :transaction
 
