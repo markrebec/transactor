@@ -98,4 +98,3 @@ end
 ### TODO
 
 * documentation
-* remove Array#to_h references (for ruby 2.0)
