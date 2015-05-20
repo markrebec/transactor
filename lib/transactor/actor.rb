@@ -21,7 +21,7 @@ module Transactor
     end
 
     def state
-      instance_variables.map { |var| [var.to_s.gsub('@','').to_sym, instance_variable_get(var)] }.to_h
+      Hash[instance_variables.map { |var| [var.to_s.gsub('@','').to_sym, instance_variable_get(var)] }]
     end
 
     def to_s
