@@ -1,3 +1,5 @@
+# TODO make this thing a little more dynamic, allow passing defaults when initializing
+
 module Transactor
   class Configuration
     DEFAULT_CONFIGURATION_OPTIONS = {}
