@@ -1,6 +1,7 @@
 require 'active_support/core_ext/string'
 require 'active_support/core_ext/array'
 require 'transactor/version'
+require 'transactor/configuration'
 require 'transactor/errors'
 require 'transactor/actor'
 require 'transactor/performance'
