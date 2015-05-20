@@ -1,5 +1,7 @@
 module Transactor
   class Actor
+    attr_reader :props
+
     def self.perform(*args, &block)
       new(*args).perform(&block)
     end
@@ -21,21 +23,29 @@ module Transactor
     end
 
     def state
-      Hash[instance_variables.map { |var| [var.to_s.gsub('@','').to_sym, instance_variable_get(var)] }]
+      props.to_h
     end
 
     def to_s
       "#{self.class.name} #{state.to_s}"
     end
 
+    def method_missing(meth, *args, &block)
+      if props.respond_to?(meth)
+        props.send meth, *args, &block
+      else
+        super
+      end
+    end
+
+    def respond_to_missing?(meth, include_private=false)
+      props.respond_to?(meth, include_private)
+    end
+
     protected
 
     def initialize(*args)
-      opts = args.extract_options!
-      opts.each do |key,val|
-        instance_variable_set "@#{key}".to_sym, val
-      end
-      class_eval { attr_reader *opts.keys.map(&:to_sym) }
+      @props = Props.new(args.extract_options!)
     end
   end
 end

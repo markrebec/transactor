@@ -4,11 +4,11 @@ RSpec.describe Transactor::Actor do
   subject { Transactor::Actor.new(test_one: 'one', test_two: 2) }
 
   describe '#initialize' do
-    it 'converts options hash to instance variables' do
-      expect(subject.instance_variables).to include(:@test_one)
-      expect(subject.instance_variable_get :@test_one).to eql('one')
-      expect(subject.instance_variables).to include(:@test_two)
-      expect(subject.instance_variable_get :@test_two).to eql(2)
+    it 'converts options hash to a set of props' do
+      expect(subject.props).to respond_to(:test_one)
+      expect(subject.props.test_one).to eql('one')
+      expect(subject.props).to respond_to(:test_two)
+      expect(subject.props.test_two).to eql(2)
     end
 
     it 'provides attribute readers for options hash keys' do
@@ -46,7 +46,7 @@ RSpec.describe Transactor::Actor do
   end
 
   describe '#state' do
-    it 'converts instance variables into a hash' do
+    it 'converts props into a hash' do
       expect(subject.state).to eql({test_one: 'one', test_two: 2})
     end
   end
