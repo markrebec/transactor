@@ -5,6 +5,7 @@ module Transactor
   class Configuration
 
     def configure(argh={}, &block)
+      @options ||= {}
       save_state! do
         configure_with_args argh
         configure_with_block &block
@@ -25,6 +26,8 @@ module Transactor
     end
 
     def configure_option(key, val)
+      raise ArgumentError, "#{key} is not an allowed configuration option" unless @allowed.include?(key)
+
       save_state! do
         @changed[key] = [@options[key], val]
         @options[key] = val
@@ -74,9 +77,9 @@ module Transactor
     def method_missing(meth, *args, &block)
       if meth.to_s.match(/=\Z/)
         opt = meth.to_s.gsub(/=/,'').to_sym
-        return configure_option(opt, args.first) if @options.key?(opt)
+        return configure_option(opt, args.first) if @allowed.include?(opt)
       else
-        return @options[meth] if @options.key?(meth)
+        return @options[meth] if @allowed.include?(meth)
       end
 
       super
@@ -85,9 +88,10 @@ module Transactor
     protected
 
     def initialize(*args, &block)
-      @options = {}
+      options = args.extract_options!
+      @allowed = options.symbolize_keys.keys
       enable_state_saves!
-      configure args.extract_options!, &block
+      configure options, &block
     end
   end
 end
