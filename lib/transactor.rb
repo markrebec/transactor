@@ -1,6 +1,7 @@
 require 'active_support/core_ext/module/attribute_accessors'
 require 'active_support/core_ext/string/inflections'
 require 'active_support/core_ext/string/output_safety'
+require 'canfig'
 require 'transactor/version'
 require 'transactor/configuration'
 require 'transactor/errors'
