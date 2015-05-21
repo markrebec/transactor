@@ -33,8 +33,8 @@ module Transactor
 
     def perform(actor, *args, &block)
       performance = Performance.new(actor, *args)
-      performance.perform(&block)
       performances << performance
+      performance.perform(&block)
       performance.result
     rescue => e
       raise PerformanceBombed.new(e, performance)
@@ -42,14 +42,28 @@ module Transactor
 
     def improvise(*args, &block)
       performance = Improv.new(*args)
-      performance.perform(&block)
       performances << performance
+      performance.perform(&block)
       performance
     rescue => e
       raise PerformanceBombed.new(e, performance)
     end
 
     def rollback
+      return true if performances.empty?
+
+      if rollback_last_performance?
+        rollback_performances
+      else
+        bombed = performances.pop
+        rollback_performances
+        performances << bombed
+      end
+      
+      true
+    end
+
+    def rollback_performances
       performances.reverse.each do |performance|
         begin
           performance.rollback
@@ -61,6 +75,16 @@ module Transactor
           raise RollbackBombed.new(e, performance)
         end
       end
+    end
+
+    def last_performance
+      performances.last
+    end
+
+    def rollback_last_performance?
+      # only rollback the last performance if it didn't bomb OR if
+      # it did and is configured to rollback on failure
+      !last_performance.failed? || (last_performance.failed? && last_performance.rollback_on_failure?)
     end
 
     def method_missing(meth, *args, &block)

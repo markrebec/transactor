@@ -13,6 +13,10 @@ require 'transactor/transaction'
 module Transactor
   include Canfig::Module
 
+  configure do |config|
+    config.rollback_failed_actors = false
+  end
+
   def self.transaction(&block)
     Transactor::Transaction.new &block
   end

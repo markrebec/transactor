@@ -8,13 +8,13 @@ module Transactor
 
     def perform(&block)
       @started = true
-      @result = @actor.perform(&block)
+      @result = actor.perform(&block)
       @performed = true
       self
     end
 
     def rollback(&block)
-      @actor.rollback(&block)
+      actor.rollback(&block)
       @rolled_back = true
       self
     end
@@ -43,6 +43,10 @@ module Transactor
       started? && rolled_back?
     end
 
+    def rollback_on_failure?
+      actor.rollback_on_failure?
+    end
+
     def state
       if failed?
         :failed
@@ -58,7 +62,7 @@ module Transactor
     end
 
     def to_s
-      "#{@actor.to_s} #{state}"
+      "#{actor.to_s} #{state}"
     end
 
     protected

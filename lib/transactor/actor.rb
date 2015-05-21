@@ -2,8 +2,23 @@ module Transactor
   class Actor
     attr_reader :props
 
-    def self.perform(*args, &block)
-      new(*args).perform(&block)
+    class << self
+      def perform(*args, &block)
+        new(*args).perform(&block)
+      end
+
+      def rollback_on_failure!
+        @rollback_on_failure = true
+      end
+
+      def rollback_on_failure?
+        return Transactor.configuration.rollback_failed_actors if @rollback_on_failure.nil?
+        @rollback_on_failure
+      end
+    end
+
+    def rollback_on_failure?
+      self.class.rollback_on_failure?
     end
 
     def perform(&block)
