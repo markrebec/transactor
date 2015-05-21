@@ -95,14 +95,51 @@ RSpec.describe Transactor::Transaction do
   end
 
   describe '#rollback' do
-    it 'rolls back all performances' do
-      3.times { subject.perform(TestActor) }
-      subject.performances.each do |performance|
-        expect(performance.actor.performed).to be_true
+    context 'when there are no failed performances' do
+      it 'rolls back all performances' do
+        3.times { subject.perform(TestActor) }
+        subject.performances.each do |performance|
+          expect(performance.actor.performed).to be_true
+        end
+        subject.rollback
+        subject.performances.each do |performance|
+          expect(performance.actor.performed).to be_false
+        end
       end
-      subject.rollback
-      subject.performances.each do |performance|
-        expect(performance.actor.performed).to be_false
+    end
+
+    context 'when the last performance failed' do
+      context 'and is configured to rollback on failure' do
+        it 'rolls back all performances' do
+          3.times { subject.perform(TestActor) }
+          subject.performances.each do |performance|
+            expect(performance.actor.performed).to be_true
+          end
+          
+          TestActor.instance_variable_set :@rollback_on_failure, true
+          subject.performances.last.instance_variable_set :@failed, true
+          subject.rollback
+          TestActor.instance_variable_set :@rollback_on_failure, false
+          
+          subject.performances.each do |performance|
+            expect(performance.actor.performed).to be_false
+          end
+        end
+      end
+
+      context 'and is configured not to rollback on failure' do
+        it 'rolls back all performances except the one that failed' do
+          TestActor.instance_variable_set :@rollback_on_failure, false
+          3.times { subject.perform(TestActor) }
+          subject.performances.each do |performance|
+            expect(performance.actor.performed).to be_true
+          end
+          subject.performances.last.instance_variable_set :@failed, true
+          subject.rollback
+          subject.performances.each do |performance|
+            expect(performance.actor.performed).to be_false
+          end
+        end
       end
     end
   end
