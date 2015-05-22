@@ -86,14 +86,6 @@ module Transactor
       !last_performance.failed? || (last_performance.failed? && last_performance.rollback_on_failure?)
     end
 
-    def method_missing(meth, *args, &block)
-      dsl.perform meth, *args, &block
-    end
-
-    def respond_to_missing?(meth, include_private=false)
-      true # *shrug* we try to perform just about anything
-    end
-
     protected
 
     def initialize(*args, &block)
