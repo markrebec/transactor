@@ -67,7 +67,7 @@ RSpec.describe Transactor::Transaction do
 
   describe '#improvise' do
     it 'returns an improv performance' do
-      expect(subject.improvise).to be_an_instance_of(Transactor::Performance)
+      expect(subject.improvise).to be_an_instance_of(Transactor::Improv::Performance)
     end
 
     it 'adds a performance to the performances array' do
@@ -77,7 +77,7 @@ RSpec.describe Transactor::Transaction do
 
     it 'casts the default actor in the performance' do
       subject.improvise
-      expect(subject.performances.last.actor).to be_an_instance_of(Transactor::Actor)
+      expect(subject.performances.last.actor).to be_an_instance_of(Transactor::Improv::Actor)
     end
 
     it 'executes the improv block' do

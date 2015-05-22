@@ -19,8 +19,8 @@ RSpec.describe Transactor::Actor do
 
   describe '#perform' do
     context 'when passed a block' do
-      it 'executes the block and returns the value' do
-        expect(subject.perform { 5+5 }).to eql(10)
+      it 'raises a PerformNotImplemented error' do
+        expect { subject.perform }.to raise_exception(Transactor::PerformNotImplemented)
       end
     end
 
@@ -33,8 +33,8 @@ RSpec.describe Transactor::Actor do
 
   describe '#rollback' do
     context 'when passed a block' do
-      it 'executes the block and returns the value' do
-        expect(subject.rollback { 5+5 }).to eql(10)
+      it 'raises a PerformNotImplemented error' do
+        expect { subject.rollback }.to raise_exception(Transactor::RollbackNotImplemented)
       end
     end
 

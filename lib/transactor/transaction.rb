@@ -44,7 +44,7 @@ module Transactor
     def improvise(*args, &block)
       block ||= Proc.new {}
       args = performance_args(*args)
-      performance = Performance.new(Actor, *args)
+      performance = Improv::Performance.new(Improv::Actor, *args)
       performances << performance
       performance.perform(&block)
       performance

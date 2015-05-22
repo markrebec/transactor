@@ -27,19 +27,11 @@ module Transactor
     end
 
     def perform(&block)
-      if block_given?
-        instance_eval &block
-      else
-        raise PerformNotImplemented, "#{self.class.name}##{__method__} has not been implemented"
-      end
+      raise PerformNotImplemented, "#{self.class.name}##{__method__} has not been implemented"
     end
 
     def rollback(&block)
-      if block_given?
-        instance_eval &block
-      else
-        raise RollbackNotImplemented, "#{self.class.name}##{__method__} has not been implemented"
-      end
+      raise RollbackNotImplemented, "#{self.class.name}##{__method__} has not been implemented"
     end
 
     def state
