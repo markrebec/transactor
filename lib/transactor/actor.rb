@@ -17,8 +17,13 @@ module Transactor
       end
     end
 
+    def rollback_on_failure!
+      @rollback_on_failure = true
+    end
+
     def rollback_on_failure?
-      self.class.rollback_on_failure?
+      return self.class.rollback_on_failure? if @rollback_on_failure.nil?
+      @rollback_on_failure
     end
 
     def perform(&block)
