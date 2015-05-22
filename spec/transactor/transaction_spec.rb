@@ -67,7 +67,7 @@ RSpec.describe Transactor::Transaction do
 
   describe '#improvise' do
     it 'returns an improv performance' do
-      expect(subject.improvise).to be_an_instance_of(Transactor::Improv)
+      expect(subject.improvise).to be_an_instance_of(Transactor::Performance)
     end
 
     it 'adds a performance to the performances array' do
