@@ -1,6 +1,6 @@
 module Transactor
   class DSL
-    attr_reader :context, :performances
+    attr_reader :performances
 
     def perform(actor, *args, &block)
       performance = Performance.new(actor, *args)
@@ -31,9 +31,9 @@ module Transactor
     def method_missing(meth, *args, &block)
       if meth.to_s.match(/=\Z/)
         key = meth.to_s.gsub(/=/,'').to_sym
-        return (context[key] = args.first) if context.key?(key)
+        return (@context[key] = args.first) if @context.key?(key)
       else
-        return context[key] if context.key?(key)
+        return @context[meth] if @context.key?(meth)
       end
 
       perform meth, *args, &block
