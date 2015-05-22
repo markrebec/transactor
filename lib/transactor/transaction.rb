@@ -1,10 +1,15 @@
 module Transactor
   class Transaction
-    attr_reader :performances, :result
+    attr_reader :result
 
-    def in_transaction(&block)
+    def dsl
+      @dsl ||= DSL.new
+    end
+
+    def in_transaction(*args, &block)
       begin
-        @result = instance_eval &block if block_given?
+        dsl.set_context! *args
+        @result = dsl.instance_eval &block if block_given?
       rescue Exception => e # yes, we want to catch everything
         begin
           rollback
@@ -16,7 +21,7 @@ module Transactor
       end
     end
 
-    def transaction!(&block)
+    def transaction!(*args, &block)
       if defined?(ActiveRecord::Base) && ActiveRecord::Base.respond_to?(:transaction)
         ActiveRecord::Base.transaction { in_transaction &block }
       else
@@ -25,28 +30,22 @@ module Transactor
       self
     end
 
-    def transaction(&block)
+    def transaction(*args, &block)
       transaction!(&block)
     rescue => e
       false
     end
 
+    def performances
+      dsl.performances
+    end
+
     def perform(actor, *args, &block)
-      performance = Performance.new(actor, *args)
-      performances << performance
-      performance.perform(&block)
-      performance.result
-    rescue => e
-      raise PerformanceBombed.new(e, performance)
+      dsl.perform(actor, *args, &block)
     end
 
     def improvise(*args, &block)
-      performance = Improv.new(*args)
-      performances << performance
-      performance.perform(&block)
-      performance
-    rescue => e
-      raise PerformanceBombed.new(e, performance)
+      dsl.improvise(*args, &block)
     end
 
     def rollback
@@ -88,7 +87,7 @@ module Transactor
     end
 
     def method_missing(meth, *args, &block)
-      perform meth, *args, &block
+      dsl.perform meth, *args, &block
     end
 
     def respond_to_missing?(meth, include_private=false)
