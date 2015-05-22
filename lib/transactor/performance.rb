@@ -8,11 +8,7 @@ module Transactor
 
     def perform(&block)
       @started = true
-      if block_given? || @block.nil?
-        @result = actor.perform(&block)
-      else
-        @result = actor.perform(&@block)
-      end
+      @result = actor.perform(&block)
       @performed = true
       self
     end
@@ -71,8 +67,7 @@ module Transactor
 
     protected
 
-    def initialize(actor, *args, &block)
-      @block = block if block_given?
+    def initialize(actor, *args)
       actor = begin
         if actor.is_a?(Array)
           actor.map { |a| a.to_s.camelize }.join('::').constantize
