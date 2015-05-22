@@ -18,8 +18,8 @@ module Transactor
 
     protected
 
-    def initialize(*args)
-      super(Actor, *args)
+    def initialize(*args, &block)
+      super(Actor, *args, &block)
     end
   end
 end
