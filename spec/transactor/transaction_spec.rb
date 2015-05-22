@@ -81,7 +81,7 @@ RSpec.describe Transactor::Transaction do
     end
 
     it 'executes the improv block' do
-      subject.improvise { 5+5 }
+      subject.improvise { 5+5 }.perform
       expect(subject.performances.last.result).to eql(10)
     end
 
@@ -89,7 +89,9 @@ RSpec.describe Transactor::Transaction do
       expect do
         subject.improvise do
           raise "Bombing"
-        end
+        end.rollback do
+          puts "Rolling Back"
+        end.perform
       end.to raise_exception(Transactor::PerformanceBombed)
     end
   end
