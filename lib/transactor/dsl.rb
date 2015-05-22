@@ -3,6 +3,7 @@ module Transactor
     attr_reader :performances
 
     def perform(actor, *args, &block)
+      args = performance_args(*args)
       performance = Performance.new(actor, *args)
       performances << performance
       performance.perform(&block)
@@ -12,6 +13,7 @@ module Transactor
     end
 
     def improvise(*args, &block)
+      args = performance_args(*args)
       performance = Improv.new(*args)
       performances << performance
       performance.perform(&block)
@@ -44,6 +46,12 @@ module Transactor
     def initialize(*args)
       @performances = []
       set_context! *args
+    end
+
+    def performance_args(*args)
+      context = @context.merge(args.extract_options!.symbolize_keys)
+      args << context
+      args
     end
   end
 end
