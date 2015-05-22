@@ -23,15 +23,15 @@ module Transactor
 
     def transaction!(*args, &block)
       if defined?(ActiveRecord::Base) && ActiveRecord::Base.respond_to?(:transaction)
-        ActiveRecord::Base.transaction { in_transaction &block }
+        ActiveRecord::Base.transaction { in_transaction *args, &block }
       else
-        in_transaction &block
+        in_transaction *args, &block
       end
       self
     end
 
     def transaction(*args, &block)
-      transaction!(&block)
+      transaction!(*args, &block)
     rescue => e
       false
     end
@@ -90,7 +90,7 @@ module Transactor
 
     def initialize(*args, &block)
       @performances = []
-      transaction! &block if block_given?
+      transaction! *args, &block if block_given?
     end
   end
 end

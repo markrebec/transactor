@@ -20,8 +20,8 @@ module Transactor
     config.rollback_failed_actors = false
   end
 
-  def self.transaction(&block)
-    Transactor::Transaction.new &block
+  def self.transaction(*args, &block)
+    Transactor::Transaction.new *args, &block
   end
 
   def self.improvise(*args, &block)
