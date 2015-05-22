@@ -10,7 +10,6 @@ require 'transactor/props'
 require 'transactor/actor'
 require 'transactor/performance'
 require 'transactor/improv'
-require 'transactor/dsl'
 require 'transactor/transaction'
 
 module Transactor

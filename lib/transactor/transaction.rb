@@ -1,15 +1,10 @@
 module Transactor
   class Transaction
-    attr_reader :result
-
-    def dsl
-      @dsl ||= DSL.new
-    end
+    attr_reader :performances, :result
 
     def in_transaction(*args, &block)
       begin
-        dsl.set_context! *args
-        @result = dsl.instance_eval &block if block_given?
+        @result = instance_eval &block if block_given?
       rescue Exception => e # yes, we want to catch everything
         begin
           rollback
@@ -36,16 +31,24 @@ module Transactor
       false
     end
 
-    def performances
-      dsl.performances
-    end
-
     def perform(actor, *args, &block)
-      dsl.perform(actor, *args, &block)
+      args = performance_args(*args)
+      performance = Performance.new(actor, *args)
+      performances << performance
+      performance.perform(&block)
+      performance.result
+    rescue => e
+      raise PerformanceBombed.new(e, performance)
     end
 
     def improvise(*args, &block)
-      dsl.improvise(*args, &block)
+      args = performance_args(*args)
+      performance = Improv.new(*args)
+      performances << performance
+      performance.perform(&block)
+      performance
+    rescue => e
+      raise PerformanceBombed.new(e, performance)
     end
 
     def rollback
@@ -76,6 +79,39 @@ module Transactor
       end
     end
 
+    def set_context!(*args)
+      @context = args.extract_options!.symbolize_keys
+    end
+
+    def clear_context!
+      @context = {}
+    end
+
+    def method_missing(meth, *args, &block)
+      if meth.to_s.match(/=\Z/)
+        key = meth.to_s.gsub(/=/,'').to_sym
+        return (@context[key] = args.first) if @context.key?(key)
+      else
+        return @context[meth] if @context.key?(meth)
+      end
+
+      perform meth, *args, &block
+    end
+
+    protected
+
+    def initialize(*args, &block)
+      @performances = []
+      set_context! *args
+      transaction! &block if block_given?
+    end
+
+    def performance_args(*args)
+      context = @context.merge(args.extract_options!.symbolize_keys)
+      args << context
+      args
+    end
+
     def last_performance
       performances.last
     end
@@ -84,13 +120,6 @@ module Transactor
       # only rollback the last performance if it didn't bomb OR if
       # it did and is configured to rollback on failure
       !last_performance.failed? || (last_performance.failed? && last_performance.rollback_on_failure?)
-    end
-
-    protected
-
-    def initialize(*args, &block)
-      @performances = []
-      transaction! *args, &block if block_given?
     end
   end
 end
