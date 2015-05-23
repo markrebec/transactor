@@ -48,6 +48,8 @@ module Transactor
       performances << performance
       performance.perform(&block)
       performance
+    rescue PerformanceBombed => e
+      raise e
     rescue => e
       raise PerformanceBombed.new(e, performance)
     end

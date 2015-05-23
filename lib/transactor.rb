@@ -24,12 +24,6 @@ module Transactor
   end
 
   def self.improvise(*args, &block)
-    # TODO revisit this after the transaction DSL is all set
-    #t = Transactor::Transaction.new
-    #improv = t.improvise(*args, &block)
-    # OR
-    #improv = Improv.new(*args, &block)
-    #improv.actor.rollback_on_failure!
-    #improv
+    Transactor::Improv::Transaction.new *args, &block
   end
 end
