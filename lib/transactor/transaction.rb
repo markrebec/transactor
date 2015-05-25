@@ -83,22 +83,19 @@ module Transactor
     end
 
     def set_context!(*args)
-      @context = args.extract_options!.symbolize_keys
+      @props = Props.new(args.extract_options!.symbolize_keys)
     end
 
     def clear_context!
-      @context = {}
+      @props = Props.new
     end
 
     def method_missing(meth, *args, &block)
-      if meth.to_s.match(/=\Z/)
-        key = meth.to_s.gsub(/=/,'').to_sym
-        return (@context[key] = args.first) if @context.key?(key)
+      if @props.respond_to?(meth)
+        @props.send meth, *args, &block
       else
-        return @context[meth] if @context.key?(meth)
+        perform meth, *args, &block
       end
-
-      perform meth, *args, &block
     end
 
     protected
@@ -110,8 +107,8 @@ module Transactor
     end
 
     def performance_args(*args)
-      context = @context.merge(args.extract_options!.symbolize_keys)
-      args << context
+      props = @props.merge(args.extract_options!.symbolize_keys)
+      args << props
       args
     end
 
