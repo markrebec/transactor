@@ -77,16 +77,17 @@ module Transactor
         rescue => e
           # there was an error rolling back the performance
           # do we halt the transaction rollback here? return the performances and allow manual rollbacks?
+          # or should we continue trying to rollback everything else? maybe make it configurable?
           raise RollbackBombed.new(e, performance)
         end
       end
     end
 
-    def set_context!(*args)
+    def set_stage!(*args)
       @props = Props.new(args.extract_options!.symbolize_keys)
     end
 
-    def clear_context!
+    def clear_stage!
       @props = Props.new
     end
 
@@ -102,7 +103,7 @@ module Transactor
 
     def initialize(*args, &block)
       @performances = []
-      set_context! *args
+      set_stage! *args
       transaction! &block if block_given?
     end
 
