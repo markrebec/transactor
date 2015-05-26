@@ -75,12 +75,17 @@ module Transactor
         rescue RollbackNotImplemented => e
           # noop, rollback was not implemented
         rescue => e
-          # there was an error rolling back the performance
-          # do we halt the transaction rollback here? return the performances and allow manual rollbacks?
-          # or should we continue trying to rollback everything else? maybe make it configurable?
-          raise RollbackBombed.new(e, performance)
+          raise RollbackBombed.new(e, performance) if Transactor.configuration.stop_rollback_on_failure
         end
       end
+    end
+
+    def bombed_performances
+      performances.select { |performance| performance.bombed? || performance.rolled_back? }
+    end
+
+    def bombed_rollbacks
+      performances.select { |performance| performance.rollback_bombed? }
     end
 
     def set_stage!(*args)

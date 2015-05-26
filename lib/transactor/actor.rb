@@ -1,8 +1,8 @@
 module Transactor
   class Actor
-    attr_reader :props, :state
+    attr_reader :props, :state, :error, :rollback_error
 
-    STATES = [:cast, :performing, :performed, :bombed, :rolling_back, :rolled_back, :rollback_failed]
+    STATES = [:cast, :performing, :performed, :bombed, :rolling_back, :rolled_back, :rollback_bombed]
 
     class << self
       def configuration
@@ -40,6 +40,7 @@ module Transactor
       @state = :performed
     rescue StandardError => e
       @state = :bombed
+      @error = e
       raise e
     end
 
@@ -48,7 +49,8 @@ module Transactor
       rollback &block
       @state = :rolled_back
     rescue StandardError => e
-      @state = :rollback_failed
+      @state = :rollback_bombed
+      @rollback_error = e
       raise e
     end
 

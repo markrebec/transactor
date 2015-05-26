@@ -17,6 +17,7 @@ module Transactor
 
   configure do |config|
     config.rollback_failed_actors = false
+    config.stop_rollback_on_failure = true
   end
 
   def self.transaction(*args, &block)

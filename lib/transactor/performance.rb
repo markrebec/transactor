@@ -24,6 +24,14 @@ module Transactor
       actor.to_s
     end
 
+    def error
+      actor.error
+    end
+
+    def rollback_error
+      actor.rollback_error
+    end
+
     Actor::STATES.each do |state|
       define_method "#{state}?" do
         actor.send "#{state}?"
