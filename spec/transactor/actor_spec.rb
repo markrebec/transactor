@@ -58,16 +58,16 @@ RSpec.describe Transactor::Actor do
   end
 
   describe '.rollback_on_failure!' do
-    before(:each) { Transactor::Actor.remove_instance_variable :@rollback_on_failure rescue nil }
+    before(:each) { Transactor::Actor.configuration.rollback_on_failure = false }
 
-    it 'sets the class instance variable to true' do
+    it 'sets the configuration option to true' do
       Transactor::Actor.rollback_on_failure!
-      expect(Transactor::Actor.instance_variable_get(:@rollback_on_failure)).to be_true
+      expect(Transactor::Actor.configuration.rollback_on_failure).to be_true
     end
   end
 
   describe '.rollback_on_failure?' do
-    before(:each) { Transactor::Actor.remove_instance_variable :@rollback_on_failure rescue nil }
+    before(:each) { Transactor::Actor.configuration.rollback_on_failure = false }
 
     context 'when the actor is configured to rollback on failure' do
       it 'returns true'do
@@ -80,28 +80,12 @@ RSpec.describe Transactor::Actor do
       it 'returns false' do
         Transactor::Actor.rollback_on_failure!
         expect(Transactor::Actor.rollback_on_failure?).to be_true
-      end
-    end
-
-    context 'when the actor is not configured' do
-      context 'when Transactor is configured to rollback failed actors' do
-        it 'returns true' do
-          Transactor.configure { |config| config.rollback_failed_actors = true }
-          expect(Transactor::Actor.rollback_on_failure?).to be_true
-        end
-      end
-
-      context 'when Transactor is configured not to rollback failed actors' do
-        it 'returns false' do
-          Transactor.configure { |config| config.rollback_failed_actors = false }
-          expect(Transactor::Actor.rollback_on_failure?).to be_false
-        end
       end
     end
   end
 
   describe '#rollback_on_failure?' do
-    before(:each) { Transactor::Actor.remove_instance_variable :@rollback_on_failure rescue nil }
+    before(:each) { Transactor::Actor.configuration.rollback_on_failure = false }
 
     context 'when the actor is configured to rollback on failure' do
       it 'returns true'do
@@ -114,22 +98,6 @@ RSpec.describe Transactor::Actor do
       it 'returns false' do
         Transactor::Actor.rollback_on_failure!
         expect(Transactor::Actor.new.rollback_on_failure?).to be_true
-      end
-    end
-
-    context 'when the actor is not configured' do
-      context 'when Transactor is configured to rollback failed actors' do
-        it 'returns true' do
-          Transactor.configure { |config| config.rollback_failed_actors = true }
-          expect(Transactor::Actor.new.rollback_on_failure?).to be_true
-        end
-      end
-
-      context 'when Transactor is configured not to rollback failed actors' do
-        it 'returns false' do
-          Transactor.configure { |config| config.rollback_failed_actors = false }
-          expect(Transactor::Actor.new.rollback_on_failure?).to be_false
-        end
       end
     end
   end

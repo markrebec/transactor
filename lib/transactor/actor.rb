@@ -3,27 +3,41 @@ module Transactor
     attr_reader :props
 
     class << self
+      def configuration
+        @configuration ||= Canfig::OpenConfig.new(rollback_on_failure: Transactor.configuration.rollback_failed_actors)
+      end
+
       def perform(*args, &block)
         new(*args).perform(&block)
       end
 
       def rollback_on_failure!
-        @rollback_on_failure = true
+        configuration.rollback_on_failure = true
       end
 
       def rollback_on_failure?
-        return Transactor.configuration.rollback_failed_actors if @rollback_on_failure.nil?
-        @rollback_on_failure
+        configuration.rollback_on_failure
       end
     end
 
+    def configuration
+      @configuration ||= self.class.configuration.dup
+    end
+
     def rollback_on_failure!
-      @rollback_on_failure = true
+      configuration.rollback_on_failure = true
     end
 
     def rollback_on_failure?
-      return self.class.rollback_on_failure? if @rollback_on_failure.nil?
-      @rollback_on_failure
+      configuration.rollback_on_failure
+    end
+
+    def perform!(&block)
+      perform &block
+    end
+
+    def rollback!(&block)
+      rollback &block
     end
 
     def perform(&block)
