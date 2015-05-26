@@ -1,6 +1,8 @@
 module Transactor
   class Actor
-    attr_reader :props
+    attr_reader :props, :state
+
+    STATES = [:cast, :performing, :performed, :bombed, :rolling_back, :rolled_back, :rollback_failed]
 
     class << self
       def configuration
@@ -33,11 +35,21 @@ module Transactor
     end
 
     def perform!(&block)
+      @state = :performing
       perform &block
+      @state = :performed
+    rescue StandardError => e
+      @state = :bombed
+      raise e
     end
 
     def rollback!(&block)
+      @state = :rolling_back
       rollback &block
+      @state = :rolled_back
+    rescue StandardError => e
+      @state = :rollback_failed
+      raise e
     end
 
     def perform(&block)
@@ -48,12 +60,14 @@ module Transactor
       raise RollbackNotImplemented, "#{self.class.name}##{__method__} has not been implemented"
     end
 
-    def state
-      props.to_h
+    def to_s
+      "#{self.class.name} #{state} #{props.to_h}"
     end
 
-    def to_s
-      "#{self.class.name} #{state.to_s}"
+    STATES.each do |state|
+      define_method "#{state}?" do
+        @state == state
+      end
     end
 
     def method_missing(meth, *args, &block)
@@ -72,6 +86,7 @@ module Transactor
 
     def initialize(*args)
       @props = Props.new(args.extract_options!)
+      @state = :cast
     end
   end
 end

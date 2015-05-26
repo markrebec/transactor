@@ -120,7 +120,7 @@ module Transactor
     def rollback_last_performance?
       # only rollback the last performance if it didn't bomb OR if
       # it did and is configured to rollback on failure
-      !last_performance.failed? || (last_performance.failed? && last_performance.rollback_on_failure?)
+      !last_performance.bombed? || (last_performance.bombed? && last_performance.rollback_on_failure?)
     end
   end
 end

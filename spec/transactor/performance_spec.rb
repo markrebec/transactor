@@ -37,8 +37,8 @@ RSpec.describe Transactor::Performance do
   end
 
   describe '#to_s' do
-    it 'stringifies the actor and state' do
-      expect(subject.to_s).to eql("#{subject.actor.to_s} #{subject.state.to_s}")
+    it 'stringifies the actor' do
+      expect(subject.to_s).to eql(subject.actor.to_s)
     end
   end
 end

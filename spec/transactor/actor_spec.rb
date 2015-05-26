@@ -45,15 +45,15 @@ RSpec.describe Transactor::Actor do
     end
   end
 
-  describe '#state' do
-    it 'converts props into a hash' do
-      expect(subject.state).to eql({test_one: 'one', test_two: 2})
+  describe '#props' do
+    it 'converts props into an open struct' do
+      expect(subject.props).to eql(OpenStruct.new({test_one: 'one', test_two: 2}))
     end
   end
 
   describe '#to_s' do
-    it 'stringifies the class name and state' do
-      expect(subject.to_s).to eql("#{subject.class.name} #{subject.state.to_s}")
+    it 'stringifies the class name, state and props' do
+      expect(subject.to_s).to eql("#{subject.class.name} #{subject.state} #{subject.props.to_h}")
     end
   end
 
