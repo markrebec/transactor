@@ -21,3 +21,13 @@ class FailingActor < Transactor::Actor
     @rolled_back = true
   end
 end
+
+class BlockActor < Transactor::Actor
+  def perform(&block)
+    instance_eval &block if block_given?
+  end
+
+  def rollback(&block)
+    instance_eval &block if block_given?
+  end
+end

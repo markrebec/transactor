@@ -7,12 +7,12 @@ module Transactor
     end
 
     def perform(&block)
-      @result = actor.perform(&block)
+      @result = actor.perform!(&block)
       self
     end
 
     def rollback(&block)
-      actor.rollback(&block)
+      actor.rollback!(&block)
       self
     end
 

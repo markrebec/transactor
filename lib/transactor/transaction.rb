@@ -51,26 +51,23 @@ module Transactor
           performance.rollback
         rescue RollbackNotImplemented => e
           # noop, rollback was not implemented
-        rescue => e
+        rescue StandardError => e
+          # performance rollback failed :(
           raise RollbackBombed.new(e, performance) if Transactor.configuration.stop_rollback_on_failure
         end
       end
-    end
-
-    # TODO remove these when specs are cleaned up
-    def perform(actor, *args, &block)
-      stage.perform actor, *args, &block
-    end
-    def improvise(*args, &block)
-      stage.improvise *args, &block
     end
 
     def performances
       stage.performances
     end
 
-    def bombed_performances
+    def bombed
       performances.select { |performance| performance.bombed? || performance.rolled_back? }
+    end
+
+    def rolled_back
+      performances.select { |performance| performance.rolled_back? }
     end
 
     def bombed_rollbacks

@@ -36,8 +36,9 @@ module Transactor
 
     def perform!(&block)
       @state = :performing
-      perform &block
+      result = perform(&block)
       @state = :performed
+      result
     rescue StandardError => e
       @state = :bombed
       @error = e
@@ -46,8 +47,9 @@ module Transactor
 
     def rollback!(&block)
       @state = :rolling_back
-      rollback &block
+      result = rollback(&block)
       @state = :rolled_back
+      result
     rescue StandardError => e
       @state = :rollback_bombed
       @rollback_error = e

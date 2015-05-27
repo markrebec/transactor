@@ -44,62 +44,10 @@ RSpec.describe Transactor::Transaction do
     end
   end
 
-  describe '#perform' do
-    it 'adds a performance to the performances array' do
-      subject.perform(TestActor)
-      expect(subject.performances.length).to eql(1)
-    end
-
-    it 'casts the provided actor in the performance' do
-      subject.perform(TestActor)
-      expect(subject.performances.last.actor).to be_an_instance_of(TestActor)
-    end
-
-    it "triggers the actor's performance" do
-      subject.perform(TestActor)
-      expect(subject.performances.last.actor.performed).to be_true
-    end
-
-    it 'bubbles exceptions as PerformanceBombed errors' do
-      expect { subject.perform(FailingActor) }.to raise_exception(Transactor::PerformanceBombed)
-    end
-  end
-
-  describe '#improvise' do
-    it 'returns an improv performance' do
-      expect(subject.improvise).to be_an_instance_of(Transactor::Improv::Performance)
-    end
-
-    it 'adds a performance to the performances array' do
-      subject.improvise
-      expect(subject.performances.length).to eql(1)
-    end
-
-    it 'casts the default actor in the performance' do
-      subject.improvise
-      expect(subject.performances.last.actor).to be_an_instance_of(Transactor::Improv::Actor)
-    end
-
-    it 'executes the improv block' do
-      subject.improvise { 5+5 }.perform
-      expect(subject.performances.last.result).to eql(10)
-    end
-
-    it 'bubbles exceptions as PerformanceBombed errors' do
-      expect do
-        subject.improvise do
-          raise "Bombing"
-        end.rollback do
-          puts "Rolling Back"
-        end.perform
-      end.to raise_exception(Transactor::PerformanceBombed)
-    end
-  end
-
   describe '#rollback' do
     context 'when there are no failed performances' do
       it 'rolls back all performances' do
-        3.times { subject.perform(TestActor) }
+        3.times { subject.stage.perform(TestActor) }
         subject.performances.each do |performance|
           expect(performance.actor.performed).to be_true
         end
@@ -113,7 +61,7 @@ RSpec.describe Transactor::Transaction do
     context 'when the last performance failed' do
       context 'and is configured to rollback on failure' do
         it 'rolls back all performances' do
-          3.times { subject.perform(TestActor) }
+          3.times { subject.stage.perform(TestActor) }
           subject.performances.each do |performance|
             expect(performance.actor.performed).to be_true
           end
@@ -132,7 +80,7 @@ RSpec.describe Transactor::Transaction do
       context 'and is configured not to rollback on failure' do
         it 'rolls back all performances except the one that failed' do
           TestActor.instance_variable_set :@rollback_on_failure, false
-          3.times { subject.perform(TestActor) }
+          3.times { subject.stage.perform(TestActor) }
           subject.performances.each do |performance|
             expect(performance.actor.performed).to be_true
           end
@@ -146,12 +94,42 @@ RSpec.describe Transactor::Transaction do
     end
   end
 
-  describe '#method_missing' do
-    it 'translates method calls to actor performances' do
-      subject.transaction! do
-        test_actor
-      end
-      expect(subject.performances.last.actor).to be_an_instance_of(TestActor)
+  describe '#performances' do
+    it 'returns the stage performances' do
+      3.times { subject.stage.perform(TestActor) }
+      expect(subject.performances).to eql(subject.stage.performances)
     end
   end
+
+  describe '#bombed' do
+    it 'returns an array of bombed or rolled back performances' do
+      5.times { subject.stage.perform(TestActor) }
+      subject.performances[0].rollback
+      subject.performances[2].actor.instance_variable_set :@state, :bombed
+      expect(subject.bombed).to eql([subject.performances[0], subject.performances[2]])
+    end
+  end
+
+  describe '#rolled_back' do
+    it 'returns an array of rolled back performances' do
+      5.times { subject.stage.perform(TestActor) }
+      subject.performances[0].rollback
+      subject.performances[2].rollback
+      expect(subject.rolled_back).to eql([subject.performances[0], subject.performances[2]])
+    end
+  end
+
+  describe '#bombed_rollbacks' do
+    it 'returns an array of bombed rollbacks' do
+      5.times { subject.stage.perform(BlockActor) }
+      begin
+      subject.performances[0].rollback { raise 'fail' }
+      rescue; end
+      begin
+      subject.performances[2].rollback { raise 'fail' }
+      rescue; end
+      expect(subject.bombed_rollbacks).to eql([subject.performances[0], subject.performances[2]])
+    end
+  end
+
 end
