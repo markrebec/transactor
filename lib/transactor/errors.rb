@@ -13,6 +13,15 @@ module Transactor
     end
   end
 
+  class RollbacksBombed < StandardError
+    attr_reader :performances
+
+    def initialize(performances)
+      super("Performance rollback failed!")
+      @performances = performances
+    end
+  end
+
   class RollbackBombed < PerformanceBombed; end
 
   class TransactionError < StandardError
@@ -26,5 +35,11 @@ module Transactor
   end
 
   class TransactionFailed < TransactionError; end
-  class RollbackFailed < TransactionError; end
+
+  class RollbackFailed < TransactionError
+    def initialize(transaction)
+      super("Transaction rollback failed!")
+      @transaction = transaction
+    end
+  end
 end

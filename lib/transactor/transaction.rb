@@ -9,7 +9,7 @@ module Transactor
         begin
           rollback
         rescue Exception => e # yes, here too
-          raise RollbackFailed.new(e, self)
+          raise RollbackFailed.new(self)
         end
 
         raise TransactionFailed.new(e, self)
@@ -56,6 +56,8 @@ module Transactor
           raise RollbackBombed.new(e, performance) if Transactor.configuration.stop_rollback_on_failure
         end
       end
+
+      raise RollbacksBombed.new(bombed_rollbacks) if Transactor.configuration.stop_rollback_on_failure && !bombed_rollbacks.empty?
     end
 
     def performances
