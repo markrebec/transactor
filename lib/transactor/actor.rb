@@ -53,7 +53,7 @@ module Transactor
     end
 
     def respond_to_missing?(meth, include_private=false)
-      props.respond_to?(meth, include_private)
+      props.respond_to?(meth, include_private) || super
     end
 
     protected
