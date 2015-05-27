@@ -1,6 +1,6 @@
 module Transactor
   class Transaction
-    attr_reader :performances, :result, :stage
+    attr_reader :result, :stage
 
     def in_transaction(*args, &block)
       begin
@@ -31,29 +31,6 @@ module Transactor
       false
     end
 
-    def perform(actor, *args, &block)
-      args = performance_args(*args)
-      performance = Performance.new(actor, *args)
-      performances << performance
-      performance.perform(&block)
-      performance.result
-    rescue => e
-      raise PerformanceBombed.new(e, performance)
-    end
-
-    def improvise(*args, &block)
-      block ||= Proc.new {}
-      args = performance_args(*args)
-      performance = Improv::Performance.new(Improv::Actor, *args)
-      performances << performance
-      performance.perform(&block)
-      performance
-    rescue PerformanceBombed => e
-      raise e
-    rescue => e
-      raise PerformanceBombed.new(e, performance)
-    end
-
     def rollback
       return true if performances.empty?
 
@@ -80,6 +57,18 @@ module Transactor
       end
     end
 
+    # TODO remove these when specs are cleaned up
+    def perform(actor, *args, &block)
+      stage.perform actor, *args, &block
+    end
+    def improvise(*args, &block)
+      stage.improvise *args, &block
+    end
+
+    def performances
+      stage.performances
+    end
+
     def bombed_performances
       performances.select { |performance| performance.bombed? || performance.rolled_back? }
     end
@@ -88,26 +77,11 @@ module Transactor
       performances.select { |performance| performance.rollback_bombed? }
     end
 
-    def method_missing(meth, *args, &block)
-      if stage.props.respond_to?(meth)
-        stage.props.send meth, *args, &block
-      else
-        perform meth, *args, &block
-      end
-    end
-
     protected
 
     def initialize(*args, &block)
-      @performances = []
-      @stage = Stage.new self, *args
+      @stage = Stage.new *args
       transaction! &block if block_given?
-    end
-
-    def performance_args(*args)
-      props = stage.props.merge(args.extract_options!.symbolize_keys)
-      args << props
-      args
     end
 
     def last_performance
