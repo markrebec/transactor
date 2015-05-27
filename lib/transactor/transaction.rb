@@ -48,7 +48,7 @@ module Transactor
     def rollback_performances
       performances.reverse.each do |performance|
         begin
-          performance.rollback
+          performance.rollback!
         rescue RollbackNotImplemented => e
           # noop, rollback was not implemented
         rescue StandardError => e

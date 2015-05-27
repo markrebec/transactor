@@ -6,7 +6,7 @@ module Transactor
       args = performance_props(*args)
       performance = Performance.new(actor, *args)
       performances << performance
-      performance.perform(&block)
+      performance.perform!(&block)
       performance.result
     rescue => e
       raise PerformanceBombed.new(e, performance)
@@ -17,7 +17,7 @@ module Transactor
       args = performance_props(*args)
       performance = Improv::Performance.new(Improv::Actor, *args)
       performances << performance
-      performance.perform(&block)
+      performance.perform!(&block)
       performance
     rescue PerformanceBombed => e
       raise e

@@ -1,40 +1,50 @@
 module Transactor
   class Performance
-    attr_reader :actor, :result
+    attr_reader :actor, :result, :state, :error, :rollback_error
+
+    STATES = [:cast, :performing, :performed, :bombed, :rolling_back, :rolled_back, :rollback_bombed]
 
     def self.perform(actor, *args, &block)
       new(actor, *args).perform(&block)
     end
 
     def perform(&block)
-      @result = actor.perform!(&block)
-      self
+      @result = actor.perform(&block)
     end
 
     def rollback(&block)
-      actor.rollback!(&block)
-      self
+      actor.rollback(&block)
     end
 
-    def state
-      actor.state
+    def perform!(&block)
+      @state = :performing
+      perform(&block)
+      @state = :performed
+      self
+    rescue StandardError => e
+      @state = :bombed
+      @error = e
+      raise e
+    end
+
+    def rollback!(&block)
+      @state = :rolling_back
+      rollback(&block)
+      @state = :rolled_back
+      self
+    rescue StandardError => e
+      @state = :rollback_bombed
+      @rollback_error = e
+      raise e
     end
 
     def to_s
-      actor.to_s
+      "#{actor.to_s} #{state}"
     end
 
-    def error
-      actor.error
-    end
-
-    def rollback_error
-      actor.rollback_error
-    end
-
-    Actor::STATES.each do |state|
+    STATES.each do |state|
       define_method "#{state}?" do
-        actor.send "#{state}?"
+        @state == state
       end
     end
 
@@ -53,6 +63,7 @@ module Transactor
         end
       end
       @actor = actor.new(*args)
+      @state = :cast
     end
   end
 end

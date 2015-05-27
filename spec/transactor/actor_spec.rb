@@ -53,7 +53,7 @@ RSpec.describe Transactor::Actor do
 
   describe '#to_s' do
     it 'stringifies the class name, state and props' do
-      expect(subject.to_s).to eql("#{subject.class.name} #{subject.state} #{subject.props.to_h}")
+      expect(subject.to_s).to eql("#{subject.class.name} #{subject.props.to_h}")
     end
   end
 

@@ -104,8 +104,8 @@ RSpec.describe Transactor::Transaction do
   describe '#bombed' do
     it 'returns an array of bombed or rolled back performances' do
       5.times { subject.stage.perform(TestActor) }
-      subject.performances[0].rollback
-      subject.performances[2].actor.instance_variable_set :@state, :bombed
+      subject.performances[0].rollback!
+      subject.performances[2].instance_variable_set :@state, :bombed
       expect(subject.bombed).to eql([subject.performances[0], subject.performances[2]])
     end
   end
@@ -113,8 +113,8 @@ RSpec.describe Transactor::Transaction do
   describe '#rolled_back' do
     it 'returns an array of rolled back performances' do
       5.times { subject.stage.perform(TestActor) }
-      subject.performances[0].rollback
-      subject.performances[2].rollback
+      subject.performances[0].rollback!
+      subject.performances[2].rollback!
       expect(subject.rolled_back).to eql([subject.performances[0], subject.performances[2]])
     end
   end
@@ -123,10 +123,10 @@ RSpec.describe Transactor::Transaction do
     it 'returns an array of bombed rollbacks' do
       5.times { subject.stage.perform(BlockActor) }
       begin
-      subject.performances[0].rollback { raise 'fail' }
+      subject.performances[0].rollback! { raise 'fail' }
       rescue; end
       begin
-      subject.performances[2].rollback { raise 'fail' }
+      subject.performances[2].rollback! { raise 'fail' }
       rescue; end
       expect(subject.bombed_rollbacks).to eql([subject.performances[0], subject.performances[2]])
     end

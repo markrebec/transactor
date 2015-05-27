@@ -24,7 +24,7 @@ RSpec.describe Transactor::Performance do
   describe '#perform' do
     it "calls the actor's perform method" do
       subject.perform
-      expect(subject.actor.performed).to be_true
+      expect(subject.actor.instance_variable_get(:@performed)).to be_true
     end
   end
 
@@ -32,13 +32,13 @@ RSpec.describe Transactor::Performance do
     it "calls the actor's rollback method" do
       subject.perform
       subject.rollback
-      expect(subject.actor.performed).to be_false
+      expect(subject.actor.instance_variable_get(:@performed)).to be_false
     end
   end
 
   describe '#to_s' do
     it 'stringifies the actor' do
-      expect(subject.to_s).to eql(subject.actor.to_s)
+      expect(subject.to_s).to eql("#{subject.actor.to_s} #{subject.state}")
     end
   end
 end

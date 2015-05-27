@@ -6,12 +6,12 @@ module Transactor
       def perform
         @transaction.performances << @performance
         @transaction.transaction! do
-          performances.last.perform
+          performances.last.perform!
         end
       end
 
       def rollback(&block)
-        @performance.rollback(&block)
+        @performance.rollback!(&block)
         self
       end
 
@@ -29,7 +29,7 @@ module Transactor
         @transaction = Transactor::Transaction.new
         @performance = Improv::Performance.new(Improv::Actor, *args)
         @performance.actor.rollback_on_failure!
-        @performance.perform(&block)
+        @performance.perform!(&block)
       end
     end
   end
