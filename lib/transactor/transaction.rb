@@ -1,10 +1,10 @@
 module Transactor
   class Transaction
-    attr_reader :performances, :result
+    attr_reader :performances, :result, :stage
 
     def in_transaction(*args, &block)
       begin
-        @result = instance_eval &block if block_given?
+        @result = stage.instance_eval &block if block_given?
       rescue Exception => e # yes, we want to catch everything
         begin
           rollback
@@ -88,17 +88,9 @@ module Transactor
       performances.select { |performance| performance.rollback_bombed? }
     end
 
-    def set_stage!(*args)
-      @props = Props.new(args.extract_options!.symbolize_keys)
-    end
-
-    def clear_stage!
-      @props = Props.new
-    end
-
     def method_missing(meth, *args, &block)
-      if @props.respond_to?(meth)
-        @props.send meth, *args, &block
+      if stage.props.respond_to?(meth)
+        stage.props.send meth, *args, &block
       else
         perform meth, *args, &block
       end
@@ -108,12 +100,12 @@ module Transactor
 
     def initialize(*args, &block)
       @performances = []
-      set_stage! *args
+      @stage = Stage.new self, *args
       transaction! &block if block_given?
     end
 
     def performance_args(*args)
-      props = @props.merge(args.extract_options!.symbolize_keys)
+      props = stage.props.merge(args.extract_options!.symbolize_keys)
       args << props
       args
     end
